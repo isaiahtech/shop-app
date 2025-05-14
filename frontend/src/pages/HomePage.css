@@ -1,0 +1,47 @@
+/* src/pages/HomePage.css */
+
+.homepage-container {
+  /* Using app-main-container from App.css for overall padding/max-width */
+}
+
+.products-section {
+  padding-top: 2rem; /* Space from navbar */
+}
+
+.section-title {
+  font-size: 2rem; /* Slightly smaller but still prominent */
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  text-align: center;
+  color: #1c1e22; /* Dark title to contrast with light page background */
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #007bff; /* Blue accent line, or Imperva orange: #f76900 */
+  display: inline-block; /* To make border only as wide as text */
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.loading-text, .info-text {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #555; /* Darker gray text */
+  padding: 2rem;
+}
+
+.homepage-error {
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); /* Adjust card min size */
+  gap: 2rem; /* Space between cards */
+}
+

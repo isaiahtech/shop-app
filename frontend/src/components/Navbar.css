@@ -1,0 +1,102 @@
+/* src/components/Navbar.css */
+.navbar {
+  background-color: #1c1e22; /* Very dark gray/black, similar to Imperva's top bar */
+  color: #e0e0e0; /* Light gray/off-white text */
+  padding: 1.25rem 2rem; /* Increased padding for a larger navbar */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25); /* More distinct shadow */
+  border-bottom: 1px solid #3a3f47; /* Darker border for the dark theme */
+}
+
+.navbar-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* Left icon, Center brand (flexible), Right links */
+  align-items: center;
+  gap: 1.5rem; /* Gap between grid sections */
+}
+
+.main-domain-icon-link {
+  display: flex;
+  align-items: center;
+  color: #b0b0b0; /* Medium-light gray for the icon */
+  text-decoration: none;
+  justify-self: start; /* Align to the start of its grid cell */
+}
+.main-domain-icon-link:hover .navbar-house-icon {
+  fill: #ffffff; /* White on hover for the icon */
+}
+
+.navbar-house-icon {
+  width: 30px; /* Slightly larger house icon */
+  height: 30px;
+  fill: currentColor; /* Inherits color from parent <a> tag */
+  transition: fill 0.2s ease-in-out;
+}
+
+.navbar-brand {
+  font-size: 1.75rem; /* Adjusted brand font size */
+  font-weight: 600; /* Slightly less bold than before, or keep 700 */
+  text-decoration: none;
+  color: #ffffff; /* White for shop brand */
+  justify-self: center; /* Center within its grid cell */
+  text-align: center;
+  padding: 0 1rem; /* Padding so it doesn't touch side elements */
+  transition: color 0.2s ease-in-out;
+}
+.navbar-brand:hover {
+  color: #cccccc; /* Lighter gray on hover */
+}
+
+.navbar-links-group {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem; /* Space between links in the right group */
+  justify-self: end; /* Align to the end of its grid cell */
+}
+
+.nav-link {
+  color: #d0d0d0; /* Light gray for links */
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+.nav-link:hover {
+  color: #ffffff;
+  background-color: #3a3f47; /* Subtle dark background on hover */
+}
+
+.navbar-user-greeting {
+  color: #b0b0b0; /* Lighter gray for greeting */
+  margin-right: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.navbar-logout-button {
+  background-color: #c53030; /* Slightly darker red */
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
+}
+.navbar-logout-button:hover {
+  background-color: #a71d2a; /* Even darker red on hover */
+}
+
+.cart-count {
+  background-color: #f76900; /* Imperva-like orange for cart count */
+  color: white;
+  border-radius: 10px;
+  padding: 0.15em 0.5em;
+  font-size: 0.7rem;
+  margin-left: 0.25rem;
+  font-weight: bold;
+  vertical-align: middle;
+}
+

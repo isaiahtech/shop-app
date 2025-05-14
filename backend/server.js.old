@@ -1,0 +1,53 @@
+// server.js (main backend entry point)
+// Location: /home/skar/shop-project/backend/server.js
+
+// Import necessary modules
+const express = require('express'); // Web framework for Node.js
+const dotenv = require('dotenv');   // Loads environment variables from .env file
+const cors = require('cors');       // Enables Cross-Origin Resource Sharing
+const connectDB = require('./config/db'); // Our function to connect to MongoDB
+
+// Load environment variables from .env file in the current directory
+// Make sure the .env file exists in /home/skar/shop-project/backend/
+dotenv.config();
+
+// Connect to MongoDB database by calling the function from config/db.js
+connectDB();
+
+// Initialize Express application
+const app = express();
+
+// --- Middleware Setup ---
+
+// Enable CORS for all origins (you might want to restrict this in production)
+app.use(cors());
+
+// Enable Express to parse incoming JSON request bodies
+// This allows us to access data sent like: { "name": "Test" } via req.body
+app.use(express.json());
+
+// --- Define API Routes ---
+
+// A simple root route to check if the API is responsive
+app.get('/', (req, res) => {
+  res.send('API is running...'); // Send a plain text response
+});
+
+// Import the authentication routes defined in routes/authRoutes.js
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+// Mount the authentication routes: any request starting with /api/auth
+// will be handled by the authRoutes router.
+// e.g., POST /api/auth/register, POST /api/auth/login
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+
+// --- Start the Server ---
+
+// Get the port number from the PORT environment variable in the .env file
+// If PORT is not defined in .env, default to 5000
+const PORT = process.env.PORT || 5000;
+
+// Start the Express server and make it listen for connections on the specified PORT
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

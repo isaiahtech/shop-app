@@ -1,0 +1,68 @@
+        // models/User.js (Mongoose schema for Users)
+
+        const mongoose = require('mongoose');
+        const bcrypt = require('bcryptjs'); // For password hashing
+
+        // Define the schema for the User collection
+        const userSchema = new mongoose.Schema({
+          name: {
+            type: String,
+            required: [true, 'Please add a name'], // Name is required
+          },
+          email: {
+            type: String,
+            required: [true, 'Please add an email'], // Email is required
+            unique: true, // Email must be unique
+            match: [ // Basic email format validation
+              /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+              'Please add a valid email',
+            ],
+          },
+          password: {
+            type: String,
+            required: [true, 'Please add a password'], // Password is required
+            minlength: 6, // Minimum password length
+            select: false, // Do not return password field by default in queries
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now, // Default creation date to now
+          },
+        });
+
+        // --- Mongoose Middleware ---
+
+        // Encrypt password using bcrypt BEFORE saving a new user document
+        userSchema.pre('save', async function (next) {
+          // Only run this function if password was actually modified (or is new)
+          if (!this.isModified('password')) {
+            return next(); // Important: return to stop execution if not modified
+          }
+
+          try {
+            // Generate salt for hashing (higher number = more secure but slower)
+            const salt = await bcrypt.genSalt(10);
+            // Hash the password with the generated salt
+            this.password = await bcrypt.hash(this.password, salt);
+            next();
+          } catch (error) {
+            next(error); // Pass error to the next middleware/handler
+          }
+        });
+
+        // --- Mongoose Methods ---
+
+        // Method to compare entered password with the hashed password in the database
+        userSchema.methods.matchPassword = async function (enteredPassword) {
+          // 'this.password' refers to the hashed password stored for this user
+          // Need error handling in case password field is missing (though required by schema)
+          if (!this.password) return false;
+          return await bcrypt.compare(enteredPassword, this.password);
+        };
+
+
+        // Create and export the User model based on the schema
+        const User = mongoose.model('User', userSchema);
+
+        module.exports = User;
+        

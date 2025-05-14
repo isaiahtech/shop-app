@@ -1,0 +1,210 @@
+/* src/pages/ProductPage.css */
+
+.product-page-container {
+  max-width: 1100px; /* Max width of the content area */
+  margin: 1rem auto; /* Center the container with some margin on top/bottom */
+  padding: 1rem;     /* Padding inside the container */
+}
+
+.product-page-back-link {
+  display: inline-block; /* Allows padding and margin */
+  margin-bottom: 1.5rem;
+  color: #4a5568; /* Gray text color */
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0; /* Light gray border */
+  border-radius: 0.375rem; /* Rounded corners */
+  transition: background-color 0.2s ease;
+}
+
+.product-page-back-link:hover {
+  background-color: #f7fafc; /* Very light gray on hover */
+}
+
+.product-details-grid {
+  display: grid;
+  gap: 2rem; /* Gap between grid items */
+  grid-template-columns: 1fr; /* Default to 1 column for smaller screens */
+}
+
+/* Medium devices (tablets, 768px and up) - Adjust grid layout */
+@media (min-width: 768px) {
+  .product-details-grid {
+    /* Example: 2 columns for image & info, 1 for actions. Adjust as needed. */
+    /* grid-template-columns: 2fr 2fr 1fr; */
+     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* More responsive */
+  }
+   /* A common 3-column layout for desktop */
+  .product-details-grid {
+     grid-template-areas:
+      "image info actions"
+      "image description actions"
+      "reviews reviews reviews"; /* If you add reviews later */
+    grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr);
+  }
+  .product-image-section { grid-area: image; }
+  .product-info-section { grid-area: info; }
+  .product-action-section { grid-area: actions; }
+  /* .product-description-full { grid-area: description; } */ /* If description is separate */
+
+}
+
+
+.product-image-section {
+  display: flex;
+  justify-content: center; /* Center image in its column */
+  align-items: flex-start; /* Align to top */
+}
+
+.product-details-image {
+  max-width: 100%;       /* Image won't overflow its container */
+  height: auto;          /* Maintain aspect ratio */
+  max-height: 450px;     /* Max height for the image */
+  border-radius: 0.5rem; /* Rounded corners for the image */
+  border: 1px solid #e2e8f0; /* Light border around image */
+  object-fit: contain;   /* Ensures whole image is visible, might leave space */
+}
+
+.product-info-section {
+  padding: 0.5rem; /* Some padding if needed */
+}
+
+.product-details-name {
+  font-size: 2rem;       /* Large product name */
+  font-weight: 700;      /* Bold */
+  color: #1a202c;       /* Very dark gray, almost black */
+  margin-bottom: 0.75rem;
+}
+
+.product-details-rating {
+  font-size: 0.9rem;
+  color: #718096;       /* Medium gray */
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #edf2f7; /* Light separator line */
+}
+
+.product-details-price {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #2d3748;       /* Dark gray-blue */
+  margin-bottom: 1rem;
+}
+
+.product-details-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #4a5568;       /* Gray */
+  margin-bottom: 1.5rem;
+}
+.product-details-description strong {
+    display: block;      /* Makes "Description:" on its own line */
+    margin-bottom: 0.25rem;
+    color: #2d3748;
+}
+
+
+.product-action-section {
+  /* This column will hold the action card */
+}
+
+.action-card {
+  border: 1px solid #e2e8f0; /* Light gray border */
+  border-radius: 0.5rem;     /* Rounded corners */
+  padding: 1.5rem;
+  background-color: #fff;    /* White background */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Subtle shadow */
+}
+
+.action-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #edf2f7; /* Light separator */
+  font-size: 0.95rem;
+}
+.action-card-row:last-child {
+  border-bottom: none; /* No border for the last row */
+}
+.action-card-row span:first-child {
+  color: #4a5568; /* Label color */
+}
+.action-card-row strong {
+  color: #1a202c; /* Value color */
+  font-weight: 600;
+}
+
+.qty-select-input {
+  padding: 0.5rem;
+  border: 1px solid #cbd5e0; /* Gray border */
+  border-radius: 0.375rem;   /* Rounded corners */
+  min-width: 70px;           /* Ensure it's not too small */
+  text-align: center;
+}
+
+.add-to-cart-button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  background-color: #38a169; /* Green */
+  color: white;
+  font-weight: 500;
+  text-align: center;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.add-to-cart-button:hover {
+  background-color: #2f855a; /* Darker green on hover */
+}
+
+.add-to-cart-button:disabled {
+  background-color: #9ca3af; /* Gray when disabled */
+  cursor: not-allowed;
+}
+
+.product-page-error {
+  color: #c53030; /* Dark red for error text */
+  background-color: #fed7d7; /* Light red background for error box */
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #f56565; /* Red border for error box */
+  text-align: center;
+}
+
+/* Responsive adjustments for the grid layout */
+@media (min-width: 768px) and (max-width: 991.98px) { /* Tablet range */
+    .product-details-grid {
+        grid-template-areas: /* Stack image, then info, then actions on tablet */
+            "image"
+            "info"
+            "actions";
+        grid-template-columns: 1fr; /* Single column */
+    }
+}
+
+@media (max-width: 767.98px) { /* Mobile range */
+    .product-details-grid {
+        grid-template-areas:
+            "image"
+            "info"
+            "actions";
+        grid-template-columns: 1fr; /* Single column */
+    }
+    .product-details-name {
+        font-size: 1.5rem; /* Slightly smaller name on mobile */
+    }
+    .product-details-price {
+        font-size: 1.25rem; /* Slightly smaller price on mobile */
+    }
+    .action-card {
+        padding: 1rem;
+    }
+}
+

@@ -1,0 +1,33 @@
+        // config/db.js (Database connection logic)
+
+        const mongoose = require('mongoose');
+        const dotenv = require('dotenv');
+
+        // Load environment variables from .env file located in the parent directory (backend/)
+        dotenv.config({ path: '../.env' });
+
+        const connectDB = async () => {
+          try {
+            // Check if MONGO_URI is loaded
+            if (!process.env.MONGO_URI) {
+                console.error('Error: MONGO_URI is not defined in .env file');
+                process.exit(1);
+            }
+
+            // Attempt to connect to MongoDB using the URI from .env file
+            const conn = await mongoose.connect(process.env.MONGO_URI, {
+              // Options to avoid deprecation warnings (might vary slightly based on Mongoose version)
+              useNewUrlParser: true,
+              useUnifiedTopology: true,
+            });
+
+            console.log(`MongoDB Connected: ${conn.connection.host}`);
+          } catch (error) {
+            // Log any connection errors and exit the process
+            console.error(`Error connecting to MongoDB: ${error.message}`);
+            process.exit(1); // Exit with failure code
+          }
+        };
+
+        module.exports = connectDB; // Export the function to be used in server.js
+        

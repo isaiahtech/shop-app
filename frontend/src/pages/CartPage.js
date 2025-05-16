@@ -1,9 +1,9 @@
 // src/pages/CartPage.js
-import React, { useState } from 'react'; // Added useState for loading/error
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import axios from 'axios'; // To make API calls
-import './CartPage.css';
+import { useCart } from '../contexts/CartContext.js'; // Ensure .js if using ES Modules consistently
+import axios from 'axios';
+import './CartPage.css'; // Ensure this CSS file is imported and exists
 
 function CartPage() {
   const {
@@ -11,7 +11,8 @@ function CartPage() {
     removeFromCart,
     updateCartItemQuantity,
     cartSubtotal,
-    clearCart, // We'll need to add clearCart to CartContext
+    clearCart, // Get clearCart from context
+    cartItemCount, // Get cartItemCount for summary
   } = useCart();
 
   const navigate = useNavigate();
@@ -27,18 +28,14 @@ function CartPage() {
       : null;
 
     if (!userInfoFromStorage || !userInfoFromStorage.token) {
-      navigate('/login?redirect=/cart'); // Redirect to login if not authenticated
+      navigate('/login?redirect=/cart');
       setLoadingCheckout(false);
       return;
     }
 
-    // --- Prepare order data ---
-    // In a real app, tax and shipping would be calculated more robustly,
-    // possibly on the backend or based on user's address.
-    // For now, we'll use simplified values or assume they are part of cartSubtotal if applicable.
-    const itemsPrice = cartSubtotal;
-    const shippingPrice = itemsPrice > 100 ? 0 : 10; // Example: free shipping over $100
-    const taxPrice = parseFloat((0.10 * itemsPrice).toFixed(2)); // Example: 10% tax
+    const itemsPrice = parseFloat(cartSubtotal.toFixed(2));
+    const shippingPrice = itemsPrice > 100 ? 0.00 : 10.00;
+    const taxPrice = parseFloat((0.10 * itemsPrice).toFixed(2));
     const totalPrice = parseFloat((itemsPrice + shippingPrice + taxPrice).toFixed(2));
 
     const orderData = {
@@ -47,11 +44,10 @@ function CartPage() {
         qty: item.qty,
         image: item.image,
         price: item.price,
-        product: item._id, // Send product ID
+        product: item._id, // This is the Product's ObjectId
       })),
-      // For simplicity, using default shippingAddress from backend model if not provided
-      // shippingAddress: { address: '123 Main St', city: 'Anytown' }, // Example
-      paymentMethod: 'SimulatedPayment', // Placeholder
+      shippingAddress: { address: '123 Test St', city: 'Testville', postalCode: '12345', country: 'USA' }, // Example
+      paymentMethod: 'SimulatedPayment',
       itemsPrice,
       taxPrice,
       shippingPrice,
@@ -66,21 +62,16 @@ function CartPage() {
         },
       };
 
-      // Make POST request to create order
       const { data: createdOrder } = await axios.post('/api/orders', orderData, config);
 
       console.log('Order created:', createdOrder);
-      // clearCart(); // Clear the cart from context and localStorage
-      // navigate(`/order/${createdOrder._id}`); // Redirect to an order details page (to be created)
-      // For now, redirect to a simple success message or profile
-      alert('Order placed successfully! (Order ID: ' + createdOrder._id + ')');
-      if (typeof clearCart === 'function') { // Check if clearCart exists
+      alert('Order placed successfully! Order ID: ' + createdOrder._id);
+
+      if (typeof clearCart === 'function') {
         clearCart();
       } else {
         console.warn("clearCart function not found in CartContext. Cart not cleared automatically.");
-        // Fallback: Manually clear localStorage for cartItems if clearCart is not available
         localStorage.removeItem('cartItems');
-        // You might need to force a re-render or use window.location.reload() if Navbar doesn't update
       }
       navigate('/profile'); // Or a dedicated order success page
 
@@ -88,13 +79,16 @@ function CartPage() {
       const message = err.response && err.response.data.message
         ? err.response.data.message
         : err.message;
-      console.error('Checkout error:', message);
+      console.error('Checkout error:', err);
       setCheckoutError(message);
     } finally {
       setLoadingCheckout(false);
     }
   };
 
+  const displayShippingPrice = cartSubtotal > 100 ? 0.00 : 10.00;
+  const displayTaxPrice = parseFloat((0.10 * cartSubtotal).toFixed(2));
+  const displayTotalPrice = parseFloat((cartSubtotal + displayShippingPrice + displayTaxPrice).toFixed(2));
 
   if (cartItems.length === 0) {
     return (
@@ -141,11 +135,11 @@ function CartPage() {
                 value={item.qty}
                 onChange={(e) => {
                     const newQty = parseInt(e.target.value, 10);
-                    if (newQty >= 0) { // Allow 0 to trigger removal in updateCartItemQuantity
+                    if (!isNaN(newQty) && newQty >= 0) {
                         updateCartItemQuantity(item._id, newQty);
                     }
                 }}
-                min="0" // Allow setting to 0, which should remove it
+                min="0"
               />
             </div>
             <div className="cart-item-subtotal">
@@ -166,21 +160,20 @@ function CartPage() {
       <div className="cart-summary">
         <h2 className="cart-summary-title">Cart Summary</h2>
         <div className="cart-summary-row">
-          <span>Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)} items):</span>
+          <span>Subtotal ({cartItemCount} items):</span>
           <span className="cart-summary-total">${cartSubtotal.toFixed(2)}</span>
         </div>
-        {/* Simplified pricing for now */}
         <div className="cart-summary-row">
             <span>Shipping:</span>
-            <span>${(cartSubtotal > 100 ? 0 : 10).toFixed(2)}</span>
+            <span>${displayShippingPrice.toFixed(2)}</span>
         </div>
         <div className="cart-summary-row">
             <span>Tax (10%):</span>
-            <span>${(0.10 * cartSubtotal).toFixed(2)}</span>
+            <span>${displayTaxPrice.toFixed(2)}</span>
         </div>
         <div className="cart-summary-row cart-grand-total">
             <span>Total:</span>
-            <span>${(cartSubtotal + (cartSubtotal > 100 ? 0 : 10) + (0.10 * cartSubtotal)).toFixed(2)}</span>
+            <span>${displayTotalPrice.toFixed(2)}</span>
         </div>
 
         <button

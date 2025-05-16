@@ -1,56 +1,63 @@
 // ~/shop-project/backend/middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js'; // Make sure the path to User.js is correct
+import User from '../models/User.js';
 import dotenv from 'dotenv';
 
-// Load environment variables from the .env file located in the parent (backend) directory
 dotenv.config({ path: '../.env' });
 
 const protect = async (req, res, next) => {
   let token;
 
-  // Check if the Authorization header exists and starts with 'Bearer'
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
-      // Get token from header (format: "Bearer <token>")
       token = req.headers.authorization.split(' ')[1];
-
-      // Verify the token using the JWT_SECRET from your .env file
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Find the user by the ID embedded in the token
-      // .select('-password') ensures the password is not fetched
-      req.user = await User.findById(decoded.id).select('-password');
+      const userFromDB = await User.findById(decoded.id).select('name email isAdmin');
 
-      if (!req.user) {
-        // If user associated with token is not found (e.g., deleted)
-        res.status(401); // Unauthorized
-        throw new Error('Not authorized, user not found for this token');
+      console.log('--- Inside PROTECT middleware ---');
+      if (userFromDB) {
+        // Convert Mongoose document to a plain JavaScript object
+        const plainUserObject = userFromDB.toObject(); // <<< KEY CHANGE HERE
+
+        console.log('User document fetched from DB (userFromDB):', JSON.stringify(userFromDB, null, 2));
+        console.log('Value of userFromDB.isAdmin directly (before .toObject()):', userFromDB.isAdmin);
+        console.log('Plain user object (plainUserObject):', JSON.stringify(plainUserObject, null, 2));
+        console.log('Value of plainUserObject.isAdmin directly:', plainUserObject.isAdmin);
+
+        req.user = plainUserObject; // Assign the plain object to req.user
+
+      } else {
+        console.log('User NOT found by token ID in DB after decoding token.');
+        req.user = null;
       }
 
-      next(); // Token is valid, user is found, proceed to the protected route
+      if (!req.user) {
+        res.status(401);
+        return res.status(401).json({ message: 'Not authorized, user not found for this token' });
+      }
+      
+      console.log('Final req.user before next():', JSON.stringify(req.user, null, 2));
+
+      next();
     } catch (error) {
-      console.error('Token verification error:', error.message);
-      res.status(401); // Unauthorized
+      console.error('Token verification error in PROTECT middleware:', error.message);
+      res.status(401);
       let errorMessage = 'Not authorized, token failed';
       if (error.name === 'JsonWebTokenError') {
         errorMessage = 'Not authorized, token is invalid';
       } else if (error.name === 'TokenExpiredError') {
         errorMessage = 'Not authorized, token has expired';
       }
-      // It's good practice to throw an error that can be caught by an error handling middleware
-      // For now, we'll send the response directly.
-      // throw new Error(errorMessage); // If you have a global error handler
-      return res.status(401).json({ message: errorMessage }); // Send response immediately
+      return res.status(401).json({ message: errorMessage });
     }
   }
 
   if (!token) {
-    res.status(401); // Unauthorized
-    // throw new Error('Not authorized, no token provided');
+    res.status(401);
     return res.status(401).json({ message: 'Not authorized, no token provided' });
   }
 };

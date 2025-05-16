@@ -1,33 +1,34 @@
 // ~/shop-project/backend/routes/productRoutes.js
 import express from 'express';
-// Import controller functions using ES module syntax
-// Note the .js extension for local module imports is crucial when "type": "module" is in package.json
 import {
   getProducts,
-  seedProducts,
   getProductById,
+  seedProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 } from '../controllers/productController.js';
+import protect from '../middleware/authMiddleware.js';
+import admin from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
 
-// --- Define Product Routes ---
+// --- Public Routes for fetching products ---
+// Anyone can view all products or a single product.
+router.route('/').get(getProducts);        // <<< REMOVED protect
+router.route('/:id').get(getProductById); // <<< REMOVED protect
 
-// @desc    Fetch all products
-// @route   GET /api/products
-// @access  Public
-router.route('/').get(getProducts);
+// --- Admin Only Routes for Product Management ---
+// To create a new product (requires login and admin status)
+router.route('/').post(protect, admin, createProduct);
 
-// @desc    Seed sample products (for development/testing)
-// @route   POST /api/products/seed
-// @access  Public (should be Admin only in a real app)
-router.route('/seed').post(seedProducts);
+// To update or delete a specific product (requires login and admin status)
+router.route('/:id')
+  .put(protect, admin, updateProduct)
+  .delete(protect, admin, deleteProduct);
 
-// @desc    Fetch single product by ID
-// @route   GET /api/products/:id
-// @access  Public
-router.route('/:id').get(getProductById);
+// Seed products route (requires login and admin status)
+router.route('/seed').post(protect, admin, seedProducts);
 
-// Add more routes later for creating, updating, deleting products (admin only)
-
-export default router; // Changed from module.exports
+export default router;
 

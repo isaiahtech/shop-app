@@ -1,102 +1,95 @@
 // src/pages/ProductPage.js
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom'; // useParams to get ID from URL
+import { useParams, Link, useNavigate } from 'react-router-dom'; // useNavigate might still be useful for other actions
 import axios from 'axios';
-import { useCart } from '../contexts/CartContext'; // For Add to Cart functionality
-import './ProductPage.css'; // We'll create this CSS file
+import { useCart } from '../contexts/CartContext.js'; // Ensure .js if using ES Modules consistently
+import './ProductPage.css'; // Ensure this CSS file is imported and exists
 
 function ProductPage() {
-  // Get the product ID from the URL parameters using the useParams hook
-  // e.g., if URL is /product/123, productId will be "123"
-  const { id: productId } = useParams();
-  const { addToCart } = useCart(); // Get addToCart function from our CartContext
+  const { id: productId } = useParams(); // Get product ID from URL
+  const { addToCart } = useCart();
+  const navigate = useNavigate(); // Keep for potential future use, like redirecting after adding to cart
 
-  // State for storing the fetched product details
   const [product, setProduct] = useState(null);
-  // State for loading status
   const [loading, setLoading] = useState(true);
-  // State for storing any errors during fetch
   const [error, setError] = useState('');
-  // State for the quantity selector
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(1); // Default quantity to add to cart
 
-  // useEffect hook to fetch product details when the component mounts or productId changes
   useEffect(() => {
+    console.log(`ProductPage: useEffect triggered for productId: ${productId}`);
     const fetchProduct = async () => {
+      setLoading(true);
+      setError('');
+      console.log('ProductPage: Attempting to fetch product details (publicly)...');
+
       try {
-        setLoading(true); // Set loading to true before fetching
-        setError(''); // Clear any previous errors
-
-        // Make GET request to the backend API for the specific product
-        // The path is relative, so it will use the proxy in development
-        // (e.g., http://localhost:5000/api/products/123)
-        // In production, it will be https://shop.isaiah.tech/api/products/123
+        // Fetch product details. No Authorization header is needed as this is now a public route.
         const { data } = await axios.get(`/api/products/${productId}`);
-
-        setProduct(data); // Store the fetched product data in state
-        setLoading(false); // Set loading to false after data is fetched
+        console.log('ProductPage: Product data received:', data);
+        setProduct(data);
       } catch (err) {
-        // Handle errors from the API call
-        setError(
-          err.response && err.response.data.message
-            ? err.response.data.message // Use error message from backend if available
-            : err.message // Otherwise, use the generic error message
-        );
-        setLoading(false); // Set loading to false even if there's an error
+        const errorMessage = err.response && err.response.data.message
+            ? err.response.data.message
+            : err.message;
+        setError(errorMessage);
+        console.error("ProductPage: Error fetching product details. Status:", err.response ? err.response.status : 'N/A', "Message:", errorMessage, "Full error:", err);
+        // No need to redirect to login for a public product fetch error.
+        // The error message will be displayed on the page.
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (productId) { // Only fetch if productId is available
+    if (productId) {
       fetchProduct();
+    } else {
+      console.log('ProductPage: No productId found in params.');
+      setLoading(false);
+      setError('Product ID is missing.');
     }
-  }, [productId]); // Re-run this effect if the productId in the URL changes
+  }, [productId]); // Only re-run if productId changes
 
-  // Handler for adding the product to the cart
   const handleAddToCart = () => {
-    if (product && qty > 0) { // Ensure product is loaded and quantity is valid
-      addToCart(product, qty); // Call the addToCart function from CartContext
-      alert(`${qty} of ${product.name} added to cart!`); // Simple confirmation
+    if (product && qty > 0) {
+      addToCart(product, qty);
+      alert(`${qty} of ${product.name} added to cart!`);
     }
   };
 
-  // --- Conditional Rendering based on loading/error state ---
   if (loading) {
-    return <div className="product-page-container"><p>Loading product details...</p></div>;
+    return <div className="product-page-container"><p className="loading-text">Loading product details...</p></div>;
   }
 
-  if (error) {
+  // If there was an error and no product data was loaded
+  if (error && !product) {
     return <div className="product-page-container product-page-error"><p>Error: {error}</p></div>;
   }
 
+  // If no product was found (e.g., invalid ID, or API returned null/empty)
   if (!product) {
-    // This case might be hit if the product ID is invalid or product isn't found
-    return <div className="product-page-container"><p>Product not found.</p></div>;
+    return <div className="product-page-container"><p className="info-text">Product not found.</p></div>;
   }
 
-  // --- Render Product Details ---
+  // Render product details if product is loaded
   return (
     <div className="product-page-container">
-      {/* Link to go back to the homepage */}
       <Link to="/" className="product-page-back-link">
         &larr; Go Back
       </Link>
-
-      {/* Grid layout for product details */}
+      {/* Display error message even if product is loaded, in case a subsequent action failed (not applicable here yet) */}
+      {error && <p className="product-page-error" style={{marginBottom: '1rem'}}>Note: {error}</p>}
       <div className="product-details-grid">
-        {/* Section for the product image */}
         <div className="product-image-section">
           <img
             src={product.image}
             alt={product.name}
             className="product-details-image"
-            onError={(e) => { // Fallback image if the main image fails to load
+            onError={(e) => {
                 e.target.onerror = null; // Prevent infinite loop if placeholder also fails
-                e.target.src = '/images/placeholder.png';
+                e.target.src = '/images/placeholder.png'; // Path to your generic placeholder
             }}
           />
         </div>
-
-        {/* Section for product information (name, rating, price, description) */}
         <div className="product-info-section">
           <h1 className="product-details-name">{product.name}</h1>
           <div className="product-details-rating">
@@ -107,8 +100,6 @@ function ProductPage() {
             <strong>Description:</strong> {product.description}
           </p>
         </div>
-
-        {/* Section for actions like price, status, quantity, add to cart button */}
         <div className="product-action-section">
           <div className="action-card">
             <div className="action-card-row">
@@ -121,8 +112,6 @@ function ProductPage() {
                 {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
               </span>
             </div>
-
-            {/* Quantity selector - only show if product is in stock */}
             {product.countInStock > 0 && (
               <div className="action-card-row">
                 <label htmlFor="qty-select">Qty:</label>
@@ -132,8 +121,8 @@ function ProductPage() {
                   onChange={(e) => setQty(Number(e.target.value))}
                   className="qty-select-input"
                 >
-                  {/* Create options from 1 up to countInStock */}
-                  {[...Array(product.countInStock).keys()].map((x) => (
+                  {/* Create options from 1 up to countInStock, but max out at a reasonable number like 10 for the dropdown */}
+                  {[...Array(Math.min(product.countInStock, 10)).keys()].map((x) => (
                     <option key={x + 1} value={x + 1}>
                       {x + 1}
                     </option>
@@ -141,26 +130,16 @@ function ProductPage() {
                 </select>
               </div>
             )}
-
             <button
               onClick={handleAddToCart}
               className="add-to-cart-button"
-              disabled={product.countInStock === 0} // Disable if out of stock
+              disabled={product.countInStock === 0}
             >
               Add to Cart
             </button>
           </div>
         </div>
       </div>
-
-      {/* Placeholder for Reviews section - to be implemented later */}
-      {/*
-      <div className="product-reviews-section">
-        <h2>Reviews</h2>
-        <p>No reviews yet.</p>
-        {/* Form to add a review could go here for logged-in users *}
-      </div>
-      */}
     </div>
   );
 }
